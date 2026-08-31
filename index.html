@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pürüzsüz Çapraz Yapışan Kart</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1200px;
+        }
+
+        #kutualani {
+            position: absolute;
+            bottom: 30px;
+            width: 140px;
+            height: 140px;
+            background-color: #7a4b1e;
+            border: 4px solid #4a2d11;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-family: sans-serif;
+            font-weight: bold;
+            z-index: 10;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        #kartKonteyner {
+            width: 260px;
+            position: absolute;
+            opacity: 0;
+            z-index: 5;
+            pointer-events: none;
+            will-change: transform, opacity;
+            transform-style: preserve-3d;
+        }
+
+        #kedikart {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            transition: filter 0.1s ease;
+        }
+
+        #camEfekti {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 4;
+            background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 50%);
+            mix-blend-mode: overlay;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="kutualani" onclick="animasyonuBaslat()">KUTU<br>(Tıkla)</div>
+    <div id="camEfekti"></div>
+
+    <div id="kartKonteyner">
+        <img id="kedikart" src="https://raw.githubusercontent.com/dadlumdadlumbakneettun/icon/main/adds.png" alt="Görsel">
+    </div>
+
+    <script>
+        let animasyonId = null;
+
+        function animasyonuBaslat() {
+            const kart = document.getElementById('kartKonteyner');
+            const gorsel = document.getElementById('kedikart');
+            const cam = document.getElementById('camEfekti');
+
+            if (animasyonId) cancelAnimationFrame(animasyonId);
+
+            const baslangicZamani = performance.now();
+            const ucusSuresi = 1200;    
+            const yapismaSuresi = 300;  
+            const toplamSure = ucusSuresi + yapismaSuresi;
+
+            const HEDEF_ROTATE_Z = -14;
+            const HEDEF_ROTATE_X = 8;
+            const HEDEF_ROTATE_Y = -12;
+
+            function fizikDongusu(simdikiZaman) {
+                let gecenSure = simdikiZaman - baslangicZamani;
+
+                if (gecenSure <= ucusSuresi) {
+                    let t = gecenSure / ucusSuresi;
+
+                    let hiziHesapla = Math.pow(t, 2); 
+                    let dampening = Math.pow(1 - t, 0.7);
+
+                    let y = (1 - hiziHesapla) * 350; 
+                    let x = Math.sin(t * Math.PI * 3) * 200 * dampening; 
+                    let z = (1 - hiziHesapla) * -1200; 
+
+                    let rotateZ = (Math.cos(t * Math.PI * 3) * 45 * dampening) + (t * HEDEF_ROTATE_Z);
+                    let rotateX = (Math.sin(t * Math.PI * 6) * 35 * dampening) + (t * HEDEF_ROTATE_X);
+                    let rotateY = (Math.sin(t * Math.PI * 3) * 30 * dampening) + (t * HEDEF_ROTATE_Y);
+
+                    let scale = 0.2 + (hiziHesapla * 2.1); 
+
+                    kart.style.opacity = Math.min(t * 6, 1);
+                    kart.style.transform = `
+                        translate3d(${x}px, ${y}px, ${z}px) 
+                        rotateX(${rotateX}deg) 
+                        rotateY(${rotateY}deg) 
+                        rotateZ(${rotateZ}deg) 
+                        scale(${scale})
+                    `;
+                    
+                    gorsel.style.filter = `blur(${(1 - t) * 3}px)`;
+                    cam.style.opacity = 0;
+
+                } else if (gecenSure <= toplamSure) {
+                    let tImpact = (gecenSure - ucusSuresi) / yapismaSuresi;
+
+                    let esnemeSonsuz = Math.sin(tImpact * Math.PI) * Math.exp(-tImpact * 4.5);
+                    
+                    let scaleX = 2.3 + (esnemeSonsuz * 0.4); 
+                    let scaleY = 2.3 - (esnemeSonsuz * 0.3); 
+
+                    kart.style.opacity = 1;
+                    kart.style.transform = `
+                        translate3d(0px, 0px, 0px) 
+                        rotateX(${HEDEF_ROTATE_X}deg) 
+                        rotateY(${HEDEF_ROTATE_Y}deg) 
+                        rotateZ(${HEDEF_ROTATE_Z}deg) 
+                        scale(${scaleX}, ${scaleY})
+                    `;
+                    
+                    gorsel.style.filter = "blur(0px)";
+                    cam.style.opacity = esnemeSonsuz * 0.8;
+                    gorsel.style.boxShadow = `0 15px 30px rgba(0,0,0,${0.5 + esnemeSonsuz * 0.3})`;
+
+                } else {
+                    kart.style.transform = `translate3d(0px, 0px, 0px) rotateX(${HEDEF_ROTATE_X}deg) rotateY(${HEDEF_ROTATE_Y}deg) rotateZ(${HEDEF_ROTATE_Z}deg) scale(2.3, 2.3)`;
+                    gorsel.style.boxShadow = "0 10px 25px rgba(0,0,0,0.5)";
+                    cam.style.opacity = 0.1;
+                }
+
+                if (gecenSure < toplamSure) {
+                    animasyonId = requestAnimationFrame(fizikDongusu);
+                }
+            }
+
+            animasyonId = requestAnimationFrame(fizikDongusu);
+        }
+    </script>
+</body>
+</html>
