@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pürüzsüz Çapraz Yapışan Kart</title>
+    <title>Pürüzsüz Çapraz Parlama Efektli Kart</title>
     <style>
         * {
             box-sizing: border-box;
@@ -15,34 +15,97 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            background-color: transparent;
+            background-color: #0f111a;
             display: flex;
             justify-content: center;
             align-items: center;
             perspective: 1200px;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transition: background-color 0.4s ease;
+        }
+
+        .sol-panel {
+            position: fixed;
+            left: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        .btn-tema {
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            user-select: none;
+        }
+
+        .btn-karanlik {
+            background: #161824;
+            color: #ffffff;
+            border-color: #2e3248;
+        }
+
+        .btn-aydinlik {
+            background: #ffffff;
+            color: #0f111a;
+            border-color: #e0e0e0;
+        }
+
+        .btn-tema:hover {
+            transform: scale(1.08);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-tema:active {
+            transform: scale(0.96);
         }
 
         #kutualani {
             position: absolute;
             bottom: 30px;
-            width: 140px;
-            height: 140px;
-            background-color: #7a4b1e;
-            border: 4px solid #4a2d11;
-            border-radius: 8px;
+            width: 130px;
+            height: 130px;
+            background: linear-gradient(135deg, #8a5323 0%, #5a3513 100%);
+            border: 3px solid #f39c12;
+            border-radius: 16px;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: white;
-            font-family: sans-serif;
+            text-align: center;
+            color: #fff;
             font-weight: bold;
             z-index: 10;
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            user-select: none;
+        }
+
+        #kutualani:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 25px rgba(243, 156, 18, 0.4);
+        }
+
+        #kutualani:active {
+            transform: scale(0.98);
         }
 
         #kartKonteyner {
-            width: 260px;
+            /* Kalite düşüşünü engellemek için kart doğrudan gerçek büyük boyutunda (560px) konumlandırıldı */
+            width: 560px;
             position: absolute;
             opacity: 0;
             z-index: 5;
@@ -51,13 +114,84 @@
             transform-style: preserve-3d;
         }
 
+        .kart-cerceve {
+            position: relative;
+            width: 100%;
+            background: transparent; /* Arka plan koyuluğu kaldırıldı, PNG şeffaflığı tamamen korundu */
+            /* Parlama ışığının tam PNG silüetine göre maskelenmesi */
+            -webkit-mask-image: url("https://raw.githubusercontent.com/dadlumdadlumbakneettun/icon/main/adds.png");
+            mask-image: url("https://raw.githubusercontent.com/dadlumdadlumbakneettun/icon/main/adds.png");
+            -webkit-mask-size: 100% 100%;
+            mask-size: 100% 100%;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+        }
+
         #kedikart {
             width: 100%;
             height: auto;
             display: block;
-            border-radius: 14px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            background: transparent;
+            /* Görselin keskinliğini maksimumda tutma */
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
             transition: filter 0.1s ease;
+        }
+
+        .parlama-isigi {
+            position: absolute;
+            top: -50%;
+            left: -150%;
+            width: 100%;
+            height: 200%;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.05) 20%,
+                rgba(255, 255, 255, 0.4) 40%,
+                rgba(255, 255, 255, 0.95) 50%,
+                rgba(255, 255, 255, 0.4) 60%,
+                rgba(255, 255, 255, 0.05) 80%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: rotate(30deg);
+            pointer-events: none;
+            mix-blend-mode: overlay;
+            opacity: 0;
+            z-index: 2;
+        }
+
+        .parlama-isigi::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 47%;
+            width: 6%;
+            height: 100%;
+            background: rgba(255, 255, 255, 1);
+            filter: blur(1px);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
+        }
+
+        .parlat {
+            animation: soldanSagaParlama 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        @keyframes soldanSagaParlama {
+            0% {
+                left: -150%;
+                opacity: 0;
+            }
+            15% {
+                opacity: 1;
+            }
+            85% {
+                opacity: 1;
+            }
+            100% {
+                left: 180%;
+                opacity: 0;
+            }
         }
 
         #camEfekti {
@@ -69,29 +203,61 @@
             pointer-events: none;
             opacity: 0;
             z-index: 4;
-            background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 50%);
+            background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 60%);
             mix-blend-mode: overlay;
         }
     </style>
 </head>
 <body>
 
+    <div class="sol-panel">
+        <button class="btn-tema btn-karanlik" onclick="temaDegistir('karanlik')">
+            ⚫ Siyah Arka Plan
+        </button>
+        <button class="btn-tema btn-aydinlik" onclick="temaDegistir('aydinlik')">
+            ⚪ Beyaz Arka Plan
+        </button>
+    </div>
+
     <div id="kutualani" onclick="animasyonuBaslat()">KUTU<br>(Tıkla)</div>
     <div id="camEfekti"></div>
 
     <div id="kartKonteyner">
-        <img id="kedikart" src="https://raw.githubusercontent.com/dadlumdadlumbakneettun/icon/main/adds.png" alt="Görsel">
+        <div class="kart-cerceve">
+            <img id="kedikart" src="https://raw.githubusercontent.com/dadlumdadlumbakneettun/icon/main/adds.png" alt="Görsel">
+            <div id="parlamaIsigi" class="parlama-isigi"></div>
+        </div>
     </div>
 
     <script>
         let animasyonId = null;
+        let parlamaZamanlayici = null;
+
+        function temaDegistir(mod) {
+            if (mod === 'karanlik') {
+                document.body.style.backgroundColor = '#0f111a';
+            } else if (mod === 'aydinlik') {
+                document.body.style.backgroundColor = '#ffffff';
+            }
+        }
+
+        function tetikleParlama() {
+            const parlama = document.getElementById('parlamaIsigi');
+            parlama.classList.remove('parlat');
+            void parlama.offsetWidth; // Reflow tetikleyerek animasyonu sıfırla
+            parlama.classList.add('parlat');
+        }
 
         function animasyonuBaslat() {
             const kart = document.getElementById('kartKonteyner');
             const gorsel = document.getElementById('kedikart');
             const cam = document.getElementById('camEfekti');
+            const parlama = document.getElementById('parlamaIsigi');
 
             if (animasyonId) cancelAnimationFrame(animasyonId);
+            if (parlamaZamanlayici) clearInterval(parlamaZamanlayici);
+            
+            parlama.classList.remove('parlat');
 
             const baslangicZamani = performance.now();
             const ucusSuresi = 1200;    
@@ -119,7 +285,8 @@
                     let rotateX = (Math.sin(t * Math.PI * 6) * 35 * dampening) + (t * HEDEF_ROTATE_X);
                     let rotateY = (Math.sin(t * Math.PI * 3) * 30 * dampening) + (t * HEDEF_ROTATE_Y);
 
-                    let scale = 0.2 + (hiziHesapla * 2.1); 
+                    // Ölçeklendirme 0.1'den başlayıp 1.0 tam net boyutuna ulaşır
+                    let scale = 0.1 + (hiziHesapla * 0.9); 
 
                     kart.style.opacity = Math.min(t * 6, 1);
                     kart.style.transform = `
@@ -138,8 +305,8 @@
 
                     let esnemeSonsuz = Math.sin(tImpact * Math.PI) * Math.exp(-tImpact * 4.5);
                     
-                    let scaleX = 2.3 + (esnemeSonsuz * 0.4); 
-                    let scaleY = 2.3 - (esnemeSonsuz * 0.3); 
+                    let scaleX = 1.0 + (esnemeSonsuz * 0.12); 
+                    let scaleY = 1.0 - (esnemeSonsuz * 0.10); 
 
                     kart.style.opacity = 1;
                     kart.style.transform = `
@@ -152,12 +319,18 @@
                     
                     gorsel.style.filter = "blur(0px)";
                     cam.style.opacity = esnemeSonsuz * 0.8;
-                    gorsel.style.boxShadow = `0 15px 30px rgba(0,0,0,${0.5 + esnemeSonsuz * 0.3})`;
 
                 } else {
-                    kart.style.transform = `translate3d(0px, 0px, 0px) rotateX(${HEDEF_ROTATE_X}deg) rotateY(${HEDEF_ROTATE_Y}deg) rotateZ(${HEDEF_ROTATE_Z}deg) scale(2.3, 2.3)`;
-                    gorsel.style.boxShadow = "0 10px 25px rgba(0,0,0,0.5)";
+                    kart.style.transform = `translate3d(0px, 0px, 0px) rotateX(${HEDEF_ROTATE_X}deg) rotateY(${HEDEF_ROTATE_Y}deg) rotateZ(${HEDEF_ROTATE_Z}deg) scale(1, 1)`;
                     cam.style.opacity = 0.1;
+
+                    // Ekrana tam oturduğunda parlama efektini başlat
+                    tetikleParlama();
+
+                    // Her 3.5 saniyede bir periyodik olarak tekrar et
+                    parlamaZamanlayici = setInterval(() => {
+                        tetikleParlama();
+                    }, 3500);
                 }
 
                 if (gecenSure < toplamSure) {
